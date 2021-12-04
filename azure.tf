@@ -13,7 +13,7 @@ provider "azurerm" {
 
 # Create a resource group if it doesn't exist
 resource "azurerm_resource_group" "jupytergroup" {
-  name     = "myResourceGroup"
+  name     = "jupyterNotebookGroup"
   location = "eastus"
 
   tags = {
@@ -22,8 +22,8 @@ resource "azurerm_resource_group" "jupytergroup" {
 }
 
 # Create virtual network
-resource "azurerm_virtual_network" "myterraformnetwork" {
-  name                = "myVnet"
+resource "azurerm_virtual_network" "jupyternetwork" {
+  name                = "jupyterVnet"
   address_space       = ["10.0.0.0/16"]
   location            = "eastus"
   resource_group_name = azurerm_resource_group.jupytergroup.name
@@ -34,16 +34,16 @@ resource "azurerm_virtual_network" "myterraformnetwork" {
 }
 
 # Create subnet
-resource "azurerm_subnet" "myterraformsubnet" {
-  name                 = "mySubnet"
+resource "azurerm_subnet" "jupytersubnet" {
+  name                 = "jupyterSubNet"
   resource_group_name  = azurerm_resource_group.jupytergroup.name
-  virtual_network_name = azurerm_virtual_network.myterraformnetwork.name
+  virtual_network_name = azurerm_virtual_network.jupyternetwork.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
 # Create public IPs
-resource "azurerm_public_ip" "myterraformpublicip" {
-  name                = "myPublicIP"
+resource "azurerm_public_ip" "jupyterPubIp" {
+  name                = "jupyterPubIp"
   location            = "eastus"
   resource_group_name = azurerm_resource_group.jupytergroup.name
   allocation_method   = "Dynamic"
@@ -54,8 +54,8 @@ resource "azurerm_public_ip" "myterraformpublicip" {
 }
 
 # Create Network Security Group and rule
-resource "azurerm_network_security_group" "myterraformnsg" {
-  name                = "myNetworkSecurityGroup"
+resource "azurerm_network_security_group" "jupyternsg" {
+  name                = "jupyternsg"
   location            = "eastus"
   resource_group_name = azurerm_resource_group.jupytergroup.name
 
@@ -77,16 +77,16 @@ resource "azurerm_network_security_group" "myterraformnsg" {
 }
 
 # Create network interface
-resource "azurerm_network_interface" "myterraformnic" {
-  name                = "myNIC"
+resource "azurerm_network_interface" "jupyternic" {
+  name                = "jupyterNIC"
   location            = "eastus"
   resource_group_name = azurerm_resource_group.jupytergroup.name
 
   ip_configuration {
     name                          = "myNicConfiguration"
-    subnet_id                     = azurerm_subnet.myterraformsubnet.id
+    subnet_id                     = azurerm_subnet.jupytersubnet.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.myterraformpublicip.id
+    public_ip_address_id          = azurerm_public_ip.jupyterPubIp.id
   }
 
   tags = {
@@ -96,8 +96,8 @@ resource "azurerm_network_interface" "myterraformnic" {
 
 # Connect the security group to the network interface
 resource "azurerm_network_interface_security_group_association" "example" {
-  network_interface_id      = azurerm_network_interface.myterraformnic.id
-  network_security_group_id = azurerm_network_security_group.myterraformnsg.id
+  network_interface_id      = azurerm_network_interface.jupyternic.id
+  network_security_group_id = azurerm_network_security_group.jupyternsg.id
 }
 
 # Generate random text for a unique storage account name
@@ -111,7 +111,7 @@ resource "random_id" "randomId" {
 }
 
 # Create storage account for boot diagnostics
-resource "azurerm_storage_account" "mystorageaccount" {
+resource "azurerm_storage_account" "jupyterstorageaccount" {
   name                     = "diag${random_id.randomId.hex}"
   resource_group_name      = azurerm_resource_group.jupytergroup.name
   location                 = "eastus"
@@ -124,21 +124,21 @@ resource "azurerm_storage_account" "mystorageaccount" {
 }
 
 # Create (and display) an SSH key
-resource "tls_private_key" "example_ssh" {
+resource "tls_private_key" "jupyterssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 output "tls_private_key" {
-  value     = tls_private_key.example_ssh.private_key_pem
+  value     = tls_private_key.jupyterssh.private_key_pem
   sensitive = true
 }
 
 # Create virtual machine
-resource "azurerm_linux_virtual_machine" "myterraformvm" {
-  name                  = "myVM"
+resource "azurerm_linux_virtual_machine" "jupytervm" {
+  name                  = "jupyter"
   location              = "eastus"
   resource_group_name   = azurerm_resource_group.jupytergroup.name
-  network_interface_ids = [azurerm_network_interface.myterraformnic.id]
+  network_interface_ids = [azurerm_network_interface.jupyternic.id]
   size                  = "Standard_B1ls"
 
   os_disk {
@@ -154,17 +154,17 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
     version   = "latest"
   }
 
-  computer_name                   = "myvm"
+  computer_name                   = "jupyter"
   admin_username                  = "azureuser"
   disable_password_authentication = true
 
   admin_ssh_key {
     username   = "azureuser"
-    public_key = tls_private_key.example_ssh.public_key_openssh
+    public_key = tls_private_key.jupyterssh.public_key_openssh
   }
 
   boot_diagnostics {
-    storage_account_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
+    storage_account_uri = azurerm_storage_account.jupyterstorageaccount.primary_blob_endpoint
   }
 
   tags = {
