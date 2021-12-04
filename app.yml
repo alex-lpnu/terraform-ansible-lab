@@ -7,24 +7,6 @@
           - python-setuptools
           - python3-pip
 
-- hosts: redis
-  become: true
-  tasks:
-    - apt:
-        name: redis-server
-    
-    - command:
-        cmd: sed -i 's/bind 127.0.0.1 ::1/bind 0.0.0.0/g' /etc/redis/redis.conf
-    
-    - service:
-        name: redis-server
-        state: started
-        enabled: yes
-    
-    - systemd: daemon_reload=yes
-
-
-
 - hosts: jupyter
   become: true
   tasks:
@@ -48,14 +30,3 @@
     - file:
         path: /notebooks
         state: directory
-
-
-- hosts: mongodb
-  become: true
-  tasks: 
-    - apt:
-        name: mongodb
-    - service:
-        name: mongodb
-        state: started
-        enabled: yes

@@ -1,11 +1,5 @@
 [jupyter]
-deploy-lavm2.eastus.cloudapp.azure.com ansible_ssh_private_key_file=./labvm2_key.pem
-
-[redis]
-deploy-lavm1.eastus.cloudapp.azure.com ansible_ssh_private_key_file=./labvm1_key.pem
-
-[mongodb]
-deploy-labvm.eastus.cloudapp.azure.com ansible_ssh_private_key_file=./labVM_key.pem
+deploy-lavm2.eastus.cloudapp.azure.com ansible_ssh_private_key_file=./jupyter_ssh.pem
 
 [all:vars]
 ansible_connection=ssh
