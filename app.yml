@@ -3,6 +3,7 @@
   become: true
   tasks:
     - apt:
+        update_cache: yes
         name: 
           - python-setuptools
           - python3-pip
