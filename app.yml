@@ -1,0 +1,61 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - apt:
+        name: 
+          - python-setuptools
+          - python3-pip
+
+- hosts: redis
+  become: true
+  tasks:
+    - apt:
+        name: redis-server
+    
+    - command:
+        cmd: sed -i 's/bind 127.0.0.1 ::1/bind 0.0.0.0/g' /etc/redis/redis.conf
+    
+    - service:
+        name: redis-server
+        state: started
+        enabled: yes
+    
+    - systemd: daemon_reload=yes
+
+
+
+- hosts: jupyter
+  become: true
+  tasks:
+    - pip:
+        name: 
+          - notebook
+          - redis
+    - copy: 
+        src: notebook.service
+        dest: /etc/systemd/system/notebook.service
+        mode: 0755
+
+    - systemd:
+        daemon_reload: yes
+
+    - service:
+        name: notebook
+        state: started
+        enabled: yes
+
+    - file:
+        path: /notebooks
+        state: directory
+
+
+- hosts: mongodb
+  become: true
+  tasks: 
+    - apt:
+        name: mongodb
+    - service:
+        name: mongodb
+        state: started
+        enabled: yes

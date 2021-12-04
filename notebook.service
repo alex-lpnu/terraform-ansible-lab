@@ -1,0 +1,16 @@
+[Unit]
+Description=Jupyter Notebook
+
+[Service]
+Type=simple
+PIDFile=/run/jupyter.pid
+ExecStart=/usr/local/bin/jupyter notebook --ip=* --port=8888 --no-browser --allow-root --notebook-dir=/home/azureuser --NotebookApp.token='' --NotebookApp.password=''
+User=azureuser
+Group=azureuser
+WorkingDirectory=/notebooks
+Restart=always
+RestartSec=10
+#KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
