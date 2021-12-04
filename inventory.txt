@@ -1,5 +1,5 @@
 [jupyter]
-deploy-lavm2.eastus.cloudapp.azure.com ansible_ssh_private_key_file=./jupyter_ssh.pem
+deploy-jupyter-lab-n.eastus.cloudapp.azure.com ansible_ssh_private_key_file=./jupyter_ssh.pem
 
 [all:vars]
 ansible_connection=ssh

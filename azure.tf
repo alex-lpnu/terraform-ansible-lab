@@ -39,6 +39,7 @@ resource "azurerm_public_ip" "jupyterPubIp" {
   location            = "eastus"
   resource_group_name = azurerm_resource_group.jupytergroup.name
   allocation_method   = "Dynamic"
+  domain_name_label   = "deploy-jupyter-lab-n"
 }
 
 # Create Network Security Group and rule
